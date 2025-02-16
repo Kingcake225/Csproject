@@ -1,0 +1,30 @@
+{% extends "landing/base.html" %}
+
+{% block title %}
+    <title>Loose Change Careers - Your Next Career Move</title>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <h1>Welcome to Loose Change Careers</h1>
+        <p>Your journey to an exciting new career starts here</p>
+        {% if not user.is_authenticated %}
+            <p>Join us today to explore opportunities and submit your CV</p>
+            <a href="{% url 'register' %}">Register Now</a>
+        {% endif %}
+    </div>
+
+    <div>
+        <div>
+            <h2>Current Openings</h2>
+            <p>A Few!</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'cv_upload:upload' %}">Apply Now</a>
+            {% endif %}
+        </div>
+        <div>
+            <h2>Why Choose Us?</h2>
+            <p>Why Not!</p>
+        </div>
+    </div>
+{% endblock content %}

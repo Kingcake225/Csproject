@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CV Ranking System</title>
+</head>
+<body>
+    <h1>CV Ranking System</h1>
+    <form id="uploadForm">
+        {% csrf_token %}
+        <div>
+            <label for="jobTitle">Select Job Position:</label>
+            <select id="jobTitle" name="job_title" required>
+                <option value="Software Engineer">Software Engineer</option>
+                <option value="Human Resources">Human Resources</option>
+                <option value="Client Services Representative">Client Services Representative</option>
+                <option value="Social Media Manager">Social Media Manager</option>
+                <option value="Compliance Analyst">Compliance Analyst</option>
+            </select>
+        </div>
+        <div>
+            <label for="cvFiles">Upload CVs (PDF only):</label>
+            <input type="file" id="cvFiles" name="files[]" multiple accept=".pdf" required>
+        </div>
+        <button type="submit">Rank CVs</button>
+    </form>
+
+    <div id="results" style="display: none;">
+        <h2>Rankings</h2>
+        <div id="rankingsList"></div>
+        
+        <h2>Detailed Results</h2>
+        <div id="detailedResults"></div>
+    </div>
+
+    <div id="error" style="display: none; color: red;"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const files = document.getElementById('cvFiles').files;
+            const jobTitle = document.getElementById('jobTitle').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files[]', files[i]);
+            }
+            formData.append('job_title', jobTitle);
+
+            fetch('', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+
+                // Display rankings
+                let rankingsHtml = '';
+                data.rankings.forEach((ranking, index) => {
+                    rankingsHtml += `
+                        <div>
+                            <strong>${index + 1}. ${ranking[0]}</strong> - Score: ${(ranking[1] * 100).toFixed(1)}%
+                        </div>`;
+                });
+                document.getElementById('rankingsList').innerHTML = rankingsHtml;
+
+                // Display detailed results
+                let detailedHtml = '';
+                data.detailed_results.forEach(result => {
+                    detailedHtml += `
+                        <div>
+                            <h3>${result.name}</h3>
+                            <strong>Job Fit Analysis:</strong><br>`;
+                    
+                    Object.entries(result.job_fits).forEach(([job, score]) => {
+                        detailedHtml += `${job}: ${(score * 100).toFixed(1)}%<br>`;
+                    });
+                    
+                    detailedHtml += '</div>';
+                });
+                document.getElementById('detailedResults').innerHTML = detailedHtml;
+            })
+            .catch(error => {
+                document.getElementById('results').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = error.message;
+            });
+        });
+    </script>
+</body>
+</html>

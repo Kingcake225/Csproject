@@ -1,0 +1,72 @@
+{% extends "landing/base.html" %}
+{% block content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Admin Dashboard - CV Management</h2>
+        <form method="POST" action="{% url 'cv_upload:delete_all_cvs' %}" onsubmit="return confirm('Are you sure you want to delete ALL CVs? This action cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger mb-4">Delete All CVs</button>
+        </form>
+        
+        {% for position, position_cvs in positions.items %}
+        <div class="mb-5">
+            <h3 class="mb-3">{{ position }}</h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Education</th>
+                            <th>Status</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cv in position_cvs %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ cv.name }}</td>
+                            <td>{{ cv.get_education_level_display }} in {{ cv.education_discipline }}</td>
+                            <td>{{ cv.status }}</td>
+                            <td>{{ cv.uploaded_at|date:"F d, Y" }}</td>
+                            <td>
+                                {% if cv.status == 'PENDING' %}
+                                    <form method="POST" action="{% url 'cv_upload:accept_cv' cv.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'cv_upload:reject_cv' cv.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                {% endif %}
+                                <a href="{{ cv.pdf_file.url }}" target="_blank" class="btn btn-primary btn-sm">View CV</a>
+                                <a href="{% url 'cv_upload:cv_details' cv.id %}" class="btn btn-info btn-sm">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info mt-4">
+            <p class="mb-0">No CVs have been submitted yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+    $(function () {
+        $('[data-toggle="popover"]').popover({
+            html: true,
+            content: function() {
+                return $(this).attr('data-content').replace(/\n/g, '<br>');
+            }
+        });
+    });
+</script>
+{% endblock %}

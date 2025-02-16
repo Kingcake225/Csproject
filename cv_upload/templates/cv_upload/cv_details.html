@@ -1,0 +1,31 @@
+{% extends "landing/base.html" %}
+{% block content %}
+    <div>
+        <div>
+            <h2>CV Details - {{ cv.name }}</h2>
+            <a href="{% url 'cv_upload:admin_dashboard' %}">Back to Dashboard</a>
+        </div>
+        
+        <div>
+            <h3>Personal Statement</h3>
+            <div>
+                {% if cv.personal_statement %}
+                    <p>{{ cv.personal_statement|linebreaks }}</p>
+                {% else %}
+                    <p>No personal statement available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <h3>Custom Message</h3>
+            <div>
+                {% if cv.custom_message %}
+                    <p>{{ cv.custom_message|linebreaks }}</p>
+                {% else %}
+                    <p>No custom message available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
